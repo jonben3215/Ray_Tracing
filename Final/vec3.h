@@ -120,6 +120,17 @@ inline vec3 unit_vector(const vec3 &v)
 {
     return v/v.length();
 }
+
+inline static vec3 random() 
+{
+    return vec3(random_double(), random_double(), random_double());
+}
+
+inline static vec3 random(double min, double max) 
+{
+    return vec3(random_double(min,max), random_double(min,max), random_double(min,max));
+}
+
 vec3 random_in_unit_sphere() 
 {
     while (true) {
@@ -129,6 +140,32 @@ vec3 random_in_unit_sphere()
     }
 }
 
+vec3 random_unit_vector() 
+{
+    return unit_vector(random_in_unit_sphere());
+}
 
+vec3 random_in_hemisphere(const vec3& normal) 
+{
+    vec3 in_unit_sphere = random_in_unit_sphere();
+    if (dot(in_unit_sphere, normal) > 0.0) // In the same hemisphere as the normal
+        return in_unit_sphere;
+    else
+        return -in_unit_sphere;
+}
 
+//Used for reflecting the light/ray on the object
+vec3 reflect(const vec3& v, const vec3& n) 
+{
+    return v - 2*dot(v,n)*n;
+}
+
+//Snells law for refraction
+vec3 refract(const vec3& uv, const vec3& n, double etai_over_etat) 
+{
+    auto cos_theta = fmin(dot(-uv, n), 1.0);
+    vec3 r_out_perp =  etai_over_etat * (uv + cos_theta*n);
+    vec3 r_out_parallel = -sqrt(fabs(1.0 - r_out_perp.length_squared())) * n;
+    return r_out_perp + r_out_parallel;
+}
 #endif
