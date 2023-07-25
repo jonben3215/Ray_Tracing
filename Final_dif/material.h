@@ -32,11 +32,32 @@ class lambertian : public material {
             attenuation = albedo;
             return true;
         }
-
     public:
         color albedo;
 };
 
+class swirl : public material {
+public:
+    swirl(const color& a, double frequency) : albedo(a), freq(frequency) {}
+
+    virtual bool scatter(
+        const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered
+    ) const override {
+        // Swirl effect - Modify the position and normal of the hit point
+        vec3 p = freq * rec.p;
+        double scale = sin(p.x()) * sin(p.y()) * sin(p.z());
+        vec3 new_position = vec3(rec.p.x() * scale, rec.p.y() * scale, rec.p.z() * scale);
+        vec3 new_normal = unit_vector(new_position - rec.p);
+
+        scattered = ray(new_position, new_normal); // Use the modified position and normal
+        attenuation = albedo;
+        return true;
+    }
+
+public:
+    color albedo;
+    double freq;
+};
 //Formula for reflecting rays: See 9.4: Mirroed Light Reflection
 class metal : public material {
     public:
