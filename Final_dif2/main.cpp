@@ -8,6 +8,52 @@
 
 #include <iostream>
 
+class MoonWithHoles : public hittable {
+public:
+    MoonWithHoles(const point3& center, double radius, shared_ptr<material> material)
+        : center(center), radius(radius), mat_ptr(material) {}
+
+    virtual bool hit(const ray& r, double t_min, double t_max, hit_record& rec) const override;
+
+private:
+    point3 center;
+    double radius;
+    shared_ptr<material> mat_ptr;
+};
+
+bool MoonWithHoles::hit(const ray& r, double t_min, double t_max, hit_record& rec) const {
+    vec3 oc = r.origin() - center;
+    auto a = r.direction().length_squared();
+    auto half_b = dot(oc, r.direction());
+    auto c = oc.length_squared() - radius * radius;
+    auto discriminant = half_b * half_b - a * c;
+
+    if (discriminant > 0) {
+        auto root = sqrt(discriminant);
+        auto temp = (-half_b - root) / a;
+
+        if (temp < t_max && temp > t_min) {
+            rec.t = temp;
+            rec.p = r.at(rec.t);
+            rec.normal = (rec.p - center) / radius;
+            rec.mat_ptr = mat_ptr;
+            return true;
+        }
+
+        temp = (-half_b + root) / a;
+        if (temp < t_max && temp > t_min) {
+            rec.t = temp;
+            rec.p = r.at(rec.t);
+            rec.normal = (rec.p - center) / radius;
+            rec.mat_ptr = mat_ptr;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
 hittable_list random_scene() {
     hittable_list world;
 
@@ -39,6 +85,14 @@ hittable_list random_scene() {
         auto emissive_material = make_shared<lambertian>(star_color);
         world.add(make_shared<sphere>(point3(x, y, z), radius, emissive_material));
     }
+    
+
+     auto moon_albedo = color(0.8, 0.8, 0.8); // Gray color for moon
+    auto moon_fuzz = random_double(0, 0.1);
+    auto moon_material = make_shared<lambertian>(moon_albedo);
+    world.add(make_shared<MoonWithHoles>(point3(0, 10, 0), 3, moon_material));
+
+
 
     // Your original spheres
     auto material1 = make_shared<dielectric>(1.5);
@@ -83,7 +137,7 @@ int main() {
     const auto aspect_ratio = 3.0 / 2.0;
     const int image_width = 1200;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
-    const int samples_per_pixel = 100;
+    const int samples_per_pixel = 20;
     const int max_depth = 50;
 
     // World
