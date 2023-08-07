@@ -74,10 +74,13 @@ hittable_list random_scene() {
         double y = radius + 0.1 * random_double();
         world.add(make_shared<sphere>(point3(x, y, z), radius, sphere_material));
     }
+
+
+
     // Add emissive spheres (stars) in the sky
     int num_stars = 100;
     for (int i = 0; i < num_stars; i++) {
-        double radius = 0.05;
+        double radius = 0.1;
         double x = random_double(-15, 15);
         double y = random_double(5, 20); // Adjust the height for the stars
         double z = random_double(-15, 15);
@@ -86,15 +89,15 @@ hittable_list random_scene() {
         world.add(make_shared<sphere>(point3(x, y, z), radius, emissive_material));
     }
     
-
-     auto moon_albedo = color(0.8, 0.8, 0.8); // Gray color for moon
+    //Add Moon
+    auto moon_albedo = color(0.8, 0.8, 0.8); // Gray color for moon
     auto moon_fuzz = random_double(0, 0.1);
     auto moon_material = make_shared<lambertian>(moon_albedo);
     world.add(make_shared<MoonWithHoles>(point3(0, 10, 0), 3, moon_material));
 
 
 
-    // Your original spheres
+    // original spheres
     auto material1 = make_shared<dielectric>(1.5);
     world.add(make_shared<sphere>(point3(0, 1.0, 0), 1.0, material1));
 
@@ -137,7 +140,7 @@ int main() {
     const auto aspect_ratio = 3.0 / 2.0;
     const int image_width = 1200;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
-    const int samples_per_pixel = 20;
+    const int samples_per_pixel = 30;
     const int max_depth = 50;
 
     // World
@@ -150,7 +153,7 @@ int main() {
         auto fuzz = random_double(0, 0.2);
         auto sphere_material = make_shared<lambertian>(albedo);
 
-        double radius = 0.05;
+        double radius = 0.8;//This is the radius of the star spheres
         double x = random_double(-15, 15);
         double z = random_double(-15, 15);
         double y = radius + random_double(10, 50); // Raise stars higher in the sky
